@@ -37,6 +37,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// ...existing code...
 router.get("/", async (req, res) => {
   const users = await User.find();
   res.json(users);
