@@ -3,6 +3,35 @@ const router = express.Router();
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Optionally, don't return the password
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    res.json(userObj);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // Register a new user
 router.post("/register", async (req, res) => {
   try {
@@ -37,12 +66,29 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// ...existing code...
+// Update user's saving percentage
+router.post("/:userId/saving-percentage", async (req, res) => {
+  try {
+    const { percentage } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.params.userId,
+      { currentSavingPercentage: percentage },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Get all users
 router.get("/", async (req, res) => {
   const users = await User.find();
   res.json(users);
 });
 
+// Get user by ID
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
