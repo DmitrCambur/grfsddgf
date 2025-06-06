@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const Month = require("../models/Month");
+const CurrentIncome = require("../models/CurrentIncome");
+const CurrentExpense = require("../models/CurrentExpense");
+const HistoryIncome = require("../models/HistoryIncome");
+const HistoryExpense = require("../models/HistoryExpense");
 const mongoose = require("mongoose");
 
 // Create a new month
@@ -49,6 +53,43 @@ router.put("/:monthId/saving-percentage", async (req, res) => {
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+router.post("/:monthId/archive", async (req, res) => {
+  const { monthId } = req.params;
+  try {
+    // Archive incomes
+    const incomes = await CurrentIncome.find({ month_id: monthId });
+    if (incomes.length) {
+      await HistoryIncome.insertMany(
+        incomes.map((i) => {
+          const obj = i.toObject();
+          delete obj._id;
+          return obj;
+        })
+      );
+      await CurrentIncome.deleteMany({ month_id: monthId });
+    }
+    // Archive expenses
+    const expenses = await CurrentExpense.find({ month_id: monthId });
+    if (expenses.length) {
+      await HistoryExpense.insertMany(
+        expenses.map((e) => {
+          const obj = e.toObject();
+          delete obj._id;
+          return obj;
+        })
+      );
+      await CurrentExpense.deleteMany({ month_id: monthId });
+    }
+    res.json({
+      success: true,
+      incomesArchived: incomes.length,
+      expensesArchived: expenses.length,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
