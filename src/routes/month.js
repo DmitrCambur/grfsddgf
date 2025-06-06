@@ -14,9 +14,9 @@ router.post("/", async (req, res) => {
 
 router.post("/get-or-create", async (req, res) => {
   const { userId, month, year } = req.body;
-  let doc = await Month.findOne({ userId, month, year });
+  let doc = await Month.findOne({ user_id: userId, month, year });
   if (!doc) {
-    doc = await Month.create({ userId, month, year });
+    doc = await Month.create({ user_id: userId, month, year });
   }
   res.json(doc);
 });
