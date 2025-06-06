@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const CurrentIncome = require("../models/CurrentIncomes");
+const mongoose = require("mongoose");
 
 // Create a new current income for a user (salary, monthly, auto dates)
 router.post("/:userId", async (req, res) => {

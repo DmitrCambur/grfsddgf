@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const HistoryExpense = require("../models/HistoryExpenses");
+const mongoose = require("mongoose");
 
 // Create a new history expense
 router.post("/", async (req, res) => {

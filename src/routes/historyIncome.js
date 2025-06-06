@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const HistoryIncome = require("../models/HistoryIncomes");
+const mongoose = require("mongoose");
 
 // Create a new history income
 router.post("/", async (req, res) => {
