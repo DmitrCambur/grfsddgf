@@ -3,6 +3,33 @@ const router = express.Router();
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
+const Month = require("../models/Month");
+const CurrentIncome = require("../models/CurrentIncomes");
+const CurrentExpense = require("../models/CurrentExpenses");
+const HistoryIncome = require("../models/historyIncome");
+const HistoryExpense = require("../models/historyExpense");
+
+function getMonthLabel(month, year) {
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  return `${monthNames[parseInt(month, 10) - 1]} '${year.toString().slice(-2)}`;
+}
+
+async function getUserMonths(userId) {
+  return Month.find({ user_id: userId }).sort({ year: 1, month: 1 }).lean();
+}
 
 router.post("/login", async (req, res) => {
   try {
@@ -34,7 +61,7 @@ router.post("/login", async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-// Register a new user
+
 router.post("/register", async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -68,7 +95,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Update user's saving percentage
 router.post("/:userId/saving-percentage", async (req, res) => {
   try {
     const { percentage } = req.body;
@@ -84,13 +110,11 @@ router.post("/:userId/saving-percentage", async (req, res) => {
   }
 });
 
-// Get all users
 router.get("/", async (req, res) => {
   const users = await User.find();
   res.json(users);
 });
 
-// Get user by ID
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -98,6 +122,87 @@ router.get("/:id", async (req, res) => {
     res.json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+router.get("/:userId/savings-history", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const months = await getUserMonths(userId);
+
+    // Get all incomes and expenses for these months
+    const monthIds = months.map((m) => m._id);
+
+    // Get all incomes and expenses (current + history)
+    const [incomes, historyIncomes, expenses, historyExpenses] =
+      await Promise.all([
+        CurrentIncome.find({
+          user_id: userId,
+          month_id: { $in: monthIds },
+        }).lean(),
+        HistoryIncome.find({
+          user_id: userId,
+          month_id: { $in: monthIds },
+        }).lean(),
+        CurrentExpense.find({
+          userId: userId,
+          month_id: { $in: monthIds },
+        }).lean(),
+        HistoryExpense.find({
+          userId: userId,
+          month_id: { $in: monthIds },
+        }).lean(),
+      ]);
+
+    // Combine all incomes and expenses by month_id
+    const incomeByMonth = {};
+    [...incomes, ...historyIncomes].forEach((i) => {
+      const key = i.month_id.toString();
+      incomeByMonth[key] = (incomeByMonth[key] || 0) + (i.amount || 0);
+    });
+
+    const expenseByMonth = {};
+    [...expenses, ...historyExpenses].forEach((e) => {
+      const key = e.month_id.toString();
+      expenseByMonth[key] = (expenseByMonth[key] || 0) + (e.amount || 0);
+    });
+
+    // Calculate savings per month
+    const savingsHistory = [];
+    const monthLabels = [];
+    let total = 0;
+
+    months.forEach((m) => {
+      const monthId = m._id.toString();
+      const income = incomeByMonth[monthId] || 0;
+      const expense = expenseByMonth[monthId] || 0;
+      const saved = income - expense;
+      savingsHistory.push(saved);
+      monthLabels.push(getMonthLabel(m.month, m.year));
+      total += saved;
+    });
+
+    // Helper to get last N months
+    function lastN(n) {
+      return {
+        history: savingsHistory.slice(-n),
+        months: monthLabels.slice(-n),
+      };
+    }
+
+    // Build the response
+    res.json({
+      total,
+      history: {
+        "6m": lastN(6),
+        "1y": lastN(12),
+        "2y": lastN(24),
+        "3y": lastN(36),
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to calculate savings history" });
   }
 });
 
