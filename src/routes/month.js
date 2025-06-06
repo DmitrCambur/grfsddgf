@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const Month = require("../models/Month");
-const CurrentIncome = require("../models/CurrentIncome");
-const CurrentExpense = require("../models/CurrentExpense");
-const HistoryIncome = require("../models/HistoryIncome");
-const HistoryExpense = require("../models/HistoryExpense");
+const CurrentIncome = require("../models/CurrentIncomes");
+const CurrentExpense = require("../models/CurrentExpenses");
+const HistoryIncome = require("../models/HistoryIncomes");
+const HistoryExpense = require("../models/HistoryExpenses");
 const mongoose = require("mongoose");
 
 // Create a new month
