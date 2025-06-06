@@ -21,15 +21,17 @@ router.post("/get-or-create", async (req, res) => {
   res.json(doc);
 });
 
-// Get all months
 router.get("/", async (req, res) => {
   const months = await Month.find();
   res.json(months);
 });
 
-// Get months for a specific user
 router.get("/user/:userId", async (req, res) => {
-  const months = await Month.find({ user_id: req.params.userId });
+  const { month, year } = req.query;
+  const filter = { user_id: req.params.userId };
+  if (month) filter.month = month;
+  if (year) filter.year = year;
+  const months = await Month.find(filter);
   res.json(months);
 });
 

@@ -27,9 +27,13 @@ router.post("/:userId", async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-// Get all current incomes for a user
+
+// Get all current incomes for a user, optionally filter by month_id
 router.get("/user/:userId", async (req, res) => {
-  const incomes = await CurrentIncome.find({ user_id: req.params.userId });
+  const { month_id } = req.query;
+  const filter = { user_id: req.params.userId };
+  if (month_id) filter.month_id = month_id;
+  const incomes = await CurrentIncome.find(filter);
   res.json(incomes);
 });
 

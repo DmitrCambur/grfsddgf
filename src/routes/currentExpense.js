@@ -5,15 +5,16 @@ const CurrentExpense = require("../models/CurrentExpenses");
 // Create a new current expense
 router.post("/", async (req, res) => {
   try {
-    const { userId, expenses } = req.body;
-    if (!userId || !Array.isArray(expenses)) {
+    const { userId, expenses, month_id } = req.body;
+    if (!userId || !Array.isArray(expenses) || !month_id) {
       return res
         .status(400)
-        .json({ error: "userId and expenses array required" });
+        .json({ error: "userId, month_id, and expenses array required" });
     }
     const docs = expenses.map((exp) => ({
       ...exp,
       userId,
+      month_id,
       category: "expenses",
       started_at: exp.started_at || new Date(),
     }));
@@ -24,9 +25,12 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Get all current expenses for a user
+// Get all current expenses for a user, optionally filter by month_id
 router.get("/user/:userId", async (req, res) => {
-  const expenses = await CurrentExpense.find({ user_id: req.params.userId });
+  const { month_id } = req.query;
+  const filter = { userId: req.params.userId };
+  if (month_id) filter.month_id = month_id;
+  const expenses = await CurrentExpense.find(filter);
   res.json(expenses);
 });
 
