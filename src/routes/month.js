@@ -28,9 +28,10 @@ router.get("/", async (req, res) => {
 
 router.get("/user/:userId", async (req, res) => {
   const { month, year } = req.query;
-  const filter = { user_id: req.params.userId };
+  const filter = { user_id: new mongoose.Types.ObjectId(req.params.userId) };
   if (month) filter.month = month;
   if (year) filter.year = year;
+  console.log("Month filter:", filter); // Debug
   const months = await Month.find(filter);
   res.json(months);
 });
