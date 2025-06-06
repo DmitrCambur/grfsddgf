@@ -37,4 +37,19 @@ router.get("/user/:userId", async (req, res) => {
   res.json(months);
 });
 
+router.put("/:monthId/saving-percentage", async (req, res) => {
+  try {
+    const { savingPercentage } = req.body;
+    const updated = await Month.findByIdAndUpdate(
+      req.params.monthId,
+      { savingPercentage },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ error: "Month not found" });
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;

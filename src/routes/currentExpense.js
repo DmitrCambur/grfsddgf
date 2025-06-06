@@ -35,4 +35,16 @@ router.get("/user/:userId", async (req, res) => {
   res.json(expenses);
 });
 
+router.delete("/:expenseId", async (req, res) => {
+  try {
+    const deleted = await CurrentExpense.findByIdAndDelete(
+      req.params.expenseId
+    );
+    if (!deleted) return res.status(404).json({ error: "Expense not found" });
+    res.json(deleted);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;

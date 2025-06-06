@@ -38,4 +38,19 @@ router.get("/user/:userId", async (req, res) => {
   res.json(incomes);
 });
 
+router.put("/:incomeId", async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const updated = await CurrentIncome.findByIdAndUpdate(
+      req.params.incomeId,
+      { amount },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ error: "Income not found" });
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;
