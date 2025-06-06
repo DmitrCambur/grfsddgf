@@ -5,8 +5,20 @@ const CurrentExpense = require("../models/CurrentExpenses");
 // Create a new current expense
 router.post("/", async (req, res) => {
   try {
-    const expense = await CurrentExpense.create(req.body);
-    res.json(expense);
+    const { userId, expenses } = req.body;
+    if (!userId || !Array.isArray(expenses)) {
+      return res
+        .status(400)
+        .json({ error: "userId and expenses array required" });
+    }
+    const docs = expenses.map((exp) => ({
+      ...exp,
+      userId,
+      category: "expenses",
+      started_at: exp.started_at || new Date(),
+    }));
+    const saved = await CurrentExpense.insertMany(docs);
+    res.json(saved);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
