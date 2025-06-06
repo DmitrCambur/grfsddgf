@@ -6,6 +6,11 @@ const HistoryIncomeSchema = new mongoose.Schema({
     ref: "Month",
     required: true,
   },
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   title: String,
   amount: Number,
   frequency: String,

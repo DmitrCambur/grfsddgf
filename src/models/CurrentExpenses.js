@@ -1,8 +1,12 @@
-// models/CurrentExpense.js
 const mongoose = require("mongoose");
 
 const CurrentExpenseSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  month_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Month",
+    required: true,
+  },
   title: { type: String, required: true },
   category: { type: String, default: "expenses" },
   isSubscription: { type: Boolean, default: false },

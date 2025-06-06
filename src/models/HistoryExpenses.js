@@ -6,6 +6,7 @@ const HistoryExpenseSchema = new mongoose.Schema({
     ref: "Month",
     required: true,
   },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   title: String,
   category: String,
   isSubscription: Boolean,
