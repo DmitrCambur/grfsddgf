@@ -6,8 +6,8 @@ const mongoose = require("mongoose");
 const Month = require("../models/Month");
 const CurrentIncome = require("../models/CurrentIncomes");
 const CurrentExpense = require("../models/CurrentExpenses");
-const HistoryIncome = require("../models/historyIncome");
-const HistoryExpense = require("../models/historyExpense");
+const HistoryIncome = require("../models/HistoryIncomes");
+const HistoryExpense = require("../models/HistoryExpenses");
 
 function getMonthLabel(month, year) {
   const monthNames = [
