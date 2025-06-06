@@ -19,4 +19,12 @@ router.get("/month/:monthId", async (req, res) => {
   res.json(expenses);
 });
 
+router.get("/user/:userId", async (req, res) => {
+  const { month_id } = req.query;
+  const filter = { userId: req.params.userId };
+  if (month_id) filter.month_id = month_id;
+  const expenses = await HistoryExpense.find(filter);
+  res.json(expenses);
+});
+
 module.exports = router;
